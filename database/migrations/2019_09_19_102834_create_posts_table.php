@@ -19,11 +19,11 @@ class CreatePostsTable extends Migration
             $table->string('title');
             $table->text('description');
             $table->decimal('price');
-            $table->bigInteger('user_id')->unsigned();
-            $table->bigInteger('category_id')->unsigned();
+            $table->bigInteger('user_id')->nullable()->unsigned();
+            $table->bigInteger('category_id')->nullable()->unsigned();
 
-            $table->foreign('category_id')->references('id')->on('categories');
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict')->onUpdate('cascade');;
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('restrict')->onUpdate('cascade');;
         });
     }
 
