@@ -6,11 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\Category;
 use App\Models\Picture;
+use App\User;
 use Auth;
 
 class PostController extends Controller {
+
     public function __construct() {
-        $this->middleware('auth')->only(['create','store','index']);
+        $this->middleware('auth')->only(['create', 'store', 'index','destroy','edit','update']);
+        $this->middleware('ban')->only(['create','edit','destroy']);
     }
     /**
      * Display a listing of the resource.
@@ -81,12 +84,12 @@ class PostController extends Controller {
             $im->setCompressionQuality(80);
             $im->setImageFormat('jpg');
             //write image on server
-            $im->writeImage(public_path() . '/storage/upload/' . $filename . '.jpg');
+            $im->writeImage(public_path() . '/storage/thumbnail/' . $filename . '.jpg');
             $im->clear();
             $im->destroy();
             //MAKE THUMBNAIL
             $desired_width = 200;
-            $src = $dest = public_path() . '/storage/upload/' . $filename . '.jpg';
+            $src = $dest = public_path() . '/storage/thumbnail/' . $filename . '.jpg';
             /* read the source image */
             $source_image = imagecreatefromjpeg($src);
             $width = imagesx($source_image);
@@ -103,14 +106,15 @@ class PostController extends Controller {
 
             $picture = new Picture;
             $picture->post_id = $post->id;
-            $picture->path = '/storage/upload/' . $filename . '.jpg';
+            $picture->path = '/storage/upload/' . $filename . '.' . $imgExt;
+            $picture->thumbnail = '/storage/thumbnail/' . $filename . '.jpg';
             $picture->save();
             if ($imgExt != 'jpg') {
                 \Storage::delete('public/upload/' . $filename . '.' . $imgExt);
             }
         }
 
-        return redirect('/');
+        return redirect('/home')->withMessage('You added a post!');
     }
     /**
      * Display the specified resource.
@@ -131,7 +135,12 @@ class PostController extends Controller {
      */
     public function edit($id)
     {
-        //
+        $post = Post::findOrFail($id);
+        $post_owner = $post->user_id;
+        if ($post_owner != Auth::id()) {
+            abort('404');
+        }
+        return view('post_update', ['post' => $post, 'categories' => Category::all()->sortBy('name')->pluck('name', 'id')]);
     }
     /**
      * Update the specified resource in storage.
@@ -142,7 +151,26 @@ class PostController extends Controller {
      */
     public function update(Request $request, $id)
     {
-        //
+        $rules = $rules = array(
+            'title' => 'required|min:3|max:200',
+            'description' => 'required|min:3|max:10000',
+            'category' => 'required|exists:categories,id',
+            'price' => ['required', 'regex:/^(?:[1-9]\d*|0)?(?:\.\d+)?/', 'not_in:0'],
+        );
+        $messages = [
+            'title.max' => 'Title should be less than 200 characters!',
+            'price' => 'The price you\'ve entered is in a wrong format!',
+        ];
+        $this->validate($request, $rules, $messages);
+        //Create a new post
+        $post = Post::find($id);
+        $post->title = $request->title;
+        $post->description = $request->description;
+        $post->price = $request->price;
+        $post->category_id = $request->category;
+        $post->save();
+
+        return redirect('home')->withMessage('Your post was successfully edited!');
     }
     /**
      * Remove the specified resource from storage.
@@ -152,6 +180,16 @@ class PostController extends Controller {
      */
     public function destroy($id)
     {
-        //
+        $post = Post::findOrFail($id);
+        $post_owner = $post->user_id;
+
+        if ($post_owner != Auth::id()) {
+            abort('404');
+        }
+
+        Picture::where('post_id',$post->id)->delete();
+        $post->delete();
+
+        return redirect('/home')->withMessage('You deleted a post!');
     }
 }

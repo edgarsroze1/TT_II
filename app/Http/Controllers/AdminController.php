@@ -1,8 +1,21 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
-class AdminController extends Controller
-{
+use App\User;
+use App\Models\Post;
+use App\Models\Picture;
+
+class AdminController extends Controller {
+
+    public function __construct() {
+        $this->middleware('admin');
+    }
+
+    public function __invoke() {
+        return view('admin');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -10,16 +23,19 @@ class AdminController extends Controller
      */
     public function index()
     {
-        //
+        return view('admin');
     }
     /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function user($id)
     {
-        //
+        $user = User::FindOrFail($id);
+        $posts = Post::where('user_id', $id)->get();
+
+        return view('user_ban', ['user' => $user, 'posts' => $posts]);
     }
     /**
      * Store a newly created resource in storage.
@@ -37,9 +53,17 @@ class AdminController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
-        //
+    public function ban($id) {
+        $user = User::FindOrFail($id);
+        if ($user->role == 3) {
+            $user->role = 1;
+        } else if ($user->role == 1) {
+            $user->role = 3;
+        }
+        $user->save();
+        return redirect()->action(
+            'AdminController@user', ['id' => $id]
+        );
     }
     /**
      * Show the form for editing the specified resource.
@@ -70,6 +94,12 @@ class AdminController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post = Post::findOrFail($id);
+        $post_owner = $post->user_id;
+        Picture::where('post_id', $post->id)->delete();
+        $post->delete();
+        return redirect()->action(
+            'AdminController@user', ['id' => $post_owner]
+        );
     }
 }

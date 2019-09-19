@@ -16,6 +16,15 @@ Route::get('/category/{id}', 'CategoryController@show')->where('id', '[0-9]+')->
 Route::get('/post/{id}', 'PostController@show')->where('id', '[0-9]+')->name('post');
 Route::get('/post/new', 'PostController@create')->name('new_post');
 Route::post('/post/new', 'PostController@store');
+Route::get('/post/delete/{id}', 'PostController@destroy')->where('id', '[0-9]+')->name('delete');
+Route::get('/post/edit/{id}', 'PostController@edit')->where('id', '[0-9]+')->name('edit');
+Route::put('/post/update/{id}', 'PostController@update');
+Route::get('/admin', 'AdminController@index')->name('admin');
+Route::get('/category/create', 'CategoryController@create');
+Route::post('/category/store', 'CategoryController@store');
+Route::get('admin/user/{id}', 'AdminController@user')->name('user');
+Route::get('admin/ban/{id}', 'AdminController@ban')->name('ban');
+Route::get('admin/delete/{id}', 'AdminController@destroy')->name('admin_delete');
 
 Auth::routes();
 
