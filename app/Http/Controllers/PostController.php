@@ -6,13 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\Category;
 use App\Models\Picture;
+use App\Models\Comment;
 use App\User;
 use Auth;
 
 class PostController extends Controller {
 
     public function __construct() {
-        $this->middleware('auth')->only(['create', 'store', 'index','destroy','edit','update']);
+        $this->middleware('auth')->only(['create', 'store', 'index','destroy','edit','update','comment']);
         $this->middleware('ban')->only(['create','edit','destroy']);
     }
     /**
@@ -125,7 +126,9 @@ class PostController extends Controller {
     public function show($id)
     {
         $post = Post::FindOrFail($id);
-        return view('post', ['post' => $post]);
+        $owner = User::Find($post->user_id);
+        $comments = Comment::where('post_id', $id)->get();
+        return view('post', ['post' => $post, 'owner' => $owner, 'comments' => $comments]);
     }
     /**
      * Show the form for editing the specified resource.
@@ -191,5 +194,20 @@ class PostController extends Controller {
         $post->delete();
 
         return redirect('/home')->withMessage('You deleted a post!');
+    }
+
+    public function comment(Request $request, $id) {
+        $rules = $rules = array(
+            'comment' => 'required|min:3|max:200',
+        );
+        $this->validate($request, $rules);
+        //Create a new post
+        $comment = new Comment;
+        $comment->comment = $request->comment;
+        $comment->post_id = $id;
+        $comment->user_id = Auth::id();
+        $comment->save();
+
+        return redirect()->action('PostController@show', $id);
     }
 }
