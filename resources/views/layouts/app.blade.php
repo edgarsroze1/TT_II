@@ -39,6 +39,14 @@
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ml-auto">
                         <!-- Authentication Links -->
+                        @if (Auth::check())
+                            <li class="nav-item mr-1">
+                                <a class="btn btn-light" href="{{ route('new_post') }}">New post</a>
+                            </li>
+                            <li class="nav-item mr-1">
+                                <a class="nav-link" href="{{ route('user_posts') }}">My posts</a>
+                            </li>
+                        @endif
                         @guest
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
