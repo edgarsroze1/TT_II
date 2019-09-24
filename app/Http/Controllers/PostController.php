@@ -6,12 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\Category;
 use App\Models\Picture;
-use App\Models\Comment;
+use Illuminate\Support\Facades\Auth;
 use App\User;
-use Auth;
+use App\Models\Comment;
 
 class PostController extends Controller {
-
     public function __construct() {
         $this->middleware('auth')->only(['create', 'store', 'index','destroy','edit','update','comment']);
         $this->middleware('ban')->only(['create','edit','destroy']);
@@ -21,8 +20,7 @@ class PostController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
+    public function index() {
         return view('user_posts', ['posts' => Post::where('user_id', Auth::id())->get()]);
     }
     /**
@@ -30,9 +28,8 @@ class PostController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        return view('create_post', ['categories' => Category::all()->sortBy('name')->pluck('name','id')]);
+    public function create() {
+        return view('create_post', ['categories' => Category::all()->sortBy('name')->pluck('name', 'id')]);
     }
     /**
      * Store a newly created resource in storage.
@@ -40,26 +37,20 @@ class PostController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $rules = $rules = array(
             'title' => 'required|min:3|max:200',
             'description' => 'required|min:3|max:10000',
             'category' => 'required|exists:categories,id',
             'price' => ['required', 'regex:/^(?:[1-9]\d*|0)?(?:\.\d+)?/', 'not_in:0'],
-            'image' => 'required',
-            'image.*' => 'required|image|max:1999',
-        );
 
+        );
         $messages = [
             'title.max' => 'Title should be less than 200 characters!',
             'price' => 'The price you\'ve entered is in a wrong format!',
-            'image.max' => 'The maximum image size is 2MB!',
-            'image.image' => 'The uploaded file should be an image!',
+
         ];
-
         $this->validate($request, $rules, $messages);
-
         //Create a new post
         $post = new Post;
         $post->user_id = Auth::id();
@@ -70,52 +61,7 @@ class PostController extends Controller {
         $post->save();
 
 
-        $ImgFolder = 'public/upload/';
-        foreach ($request->image as $image) {
-            $imgExt = $image->getClientOriginalExtension();
-            $filename = uniqid();
-            $image->storeAs($ImgFolder, $filename . '.' . $imgExt);
-            $path = '/storage/upload/' . $filename . '.' . $imgExt;
-            $fullpath = public_path() . $path;
-            //Change image to jpeg
-            $im = new \imagick();
-            $im->readImage(public_path() . '/storage/upload/' . $filename . '.' . $imgExt);
-            $im->setImageColorspace(255);
-            $im->setCompression(\Imagick::COMPRESSION_JPEG);
-            $im->setCompressionQuality(80);
-            $im->setImageFormat('jpg');
-            //write image on server
-            $im->writeImage(public_path() . '/storage/thumbnail/' . $filename . '.jpg');
-            $im->clear();
-            $im->destroy();
-            //MAKE THUMBNAIL
-            $desired_width = 200;
-            $src = $dest = public_path() . '/storage/thumbnail/' . $filename . '.jpg';
-            /* read the source image */
-            $source_image = imagecreatefromjpeg($src);
-            $width = imagesx($source_image);
-            $height = imagesy($source_image);
-            /* find the "desired height" of this thumbnail, relative to the desired width  */
-            $desired_height = floor($height * ($desired_width / $width));
-            /* create a new, "virtual" image */
-            $virtual_image = imagecreatetruecolor($desired_width, $desired_height);
-            /* copy source image at a resized size */
-            imagecopyresampled($virtual_image, $source_image, 0, 0, 0, 0, $desired_width, $desired_height, $width, $height);
-            /* create the physical thumbnail image to its destination */
-            imagejpeg($virtual_image, $dest);
-            //END THUMBNAIL
-
-            $picture = new Picture;
-            $picture->post_id = $post->id;
-            $picture->path = '/storage/upload/' . $filename . '.' . $imgExt;
-            $picture->thumbnail = '/storage/thumbnail/' . $filename . '.jpg';
-            $picture->save();
-            if ($imgExt != 'jpg') {
-                \Storage::delete('public/upload/' . $filename . '.' . $imgExt);
-            }
-        }
-
-        return redirect('/home')->withMessage('You added a post!');
+        return redirect('/home')->withMessage('You have successfully added a new post!');
     }
     /**
      * Display the specified resource.
@@ -123,8 +69,7 @@ class PostController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
+    public function show($id) {
         $post = Post::FindOrFail($id);
         $owner = User::Find($post->user_id);
         $comments = Comment::where('post_id', $id)->get();
@@ -136,8 +81,8 @@ class PostController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
+    public function edit($id) {
+        //Check if post owner is the real one
         $post = Post::findOrFail($id);
         $post_owner = $post->user_id;
         if ($post_owner != Auth::id()) {
@@ -152,8 +97,7 @@ class PostController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $rules = $rules = array(
             'title' => 'required|min:3|max:200',
             'description' => 'required|min:3|max:10000',
@@ -181,8 +125,7 @@ class PostController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $post = Post::findOrFail($id);
         $post_owner = $post->user_id;
 
@@ -193,7 +136,7 @@ class PostController extends Controller {
         Picture::where('post_id',$post->id)->delete();
         $post->delete();
 
-        return redirect('/home')->withMessage('You deleted a post!');
+        return redirect('/home')->withMessage('You have successfully deleted a post!');
     }
 
     public function comment(Request $request, $id) {

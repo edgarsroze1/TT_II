@@ -6,14 +6,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\User;
 use App\Models\Post;
-use App\Models\Picture;
 
 class AdminController extends Controller {
-
     public function __construct() {
         $this->middleware('admin');
     }
-
     public function __invoke() {
         return view('admin');
     }
@@ -22,8 +19,7 @@ class AdminController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
+    public function index() {
         return view('admin');
     }
 
@@ -36,22 +32,10 @@ class AdminController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function user($id)
-    {
+    public function user($id) {
         $user = User::FindOrFail($id);
         $posts = Post::where('user_id', $id)->get();
-
         return view('user_ban', ['user' => $user, 'posts' => $posts]);
-    }
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
     }
     /**
      * Display the specified resource.
@@ -77,8 +61,7 @@ class AdminController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
+    public function edit($id) {
         //
     }
     /**
@@ -88,8 +71,7 @@ class AdminController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         //
     }
     /**
@@ -98,11 +80,9 @@ class AdminController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $post = Post::findOrFail($id);
         $post_owner = $post->user_id;
-        Picture::where('post_id', $post->id)->delete();
         $post->delete();
         return redirect()->action(
             'AdminController@user', ['id' => $post_owner]

@@ -20,7 +20,7 @@
             <table class="table table-striped">
                 <thead class="thead-dark">
                 <tr>
-                    <th scope="col">Thumbnail</th>
+{{--                    <th scope="col">Thumbnail</th>--}}
                     <th class="w-50" scope="col">Title</th>
                     <th scope="col">Creation date</th>
                     <th scope="w-25">Price</th>
@@ -29,7 +29,7 @@
                 <tbody>
                 @foreach ($posts as $post)
                     <tr>
-                        <td><img src="{{asset($post->pictures->first()->thumbnail)}}" alt="Thumbnail" style="max-height: 100px;"></img></td>
+{{--                        <td><img src="{{asset($post->pictures->first()->thumbnail)}}" alt="Thumbnail" style="max-height: 100px;"></img></td>--}}
                         <td><a href="{{route('post',['id' => $post->id])}}">{{$post->title}}</td>
                         <td>{{$post->created_at}}</td>
                         <td><span class='text-success'><b>{{$post->price}} €</b></span></td>

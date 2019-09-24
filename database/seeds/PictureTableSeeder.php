@@ -1,6 +1,9 @@
 <?php
+
 use Illuminate\Database\Seeder;
+
 use Carbon\Carbon;
+
 class PictureTableSeeder extends Seeder
 {
     /**

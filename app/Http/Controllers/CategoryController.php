@@ -11,11 +11,9 @@ class CategoryController extends Controller {
     public function __construct() {
         $this->middleware('admin')->only(['create','store']);
     }
-
     public function index() {
         return view('landing', array('categories' => Category::all()));
     }
-
     public function show($id) {
         if (Post::where('category_id', $id)->exists()) {
             $queries = [];
@@ -33,7 +31,6 @@ class CategoryController extends Controller {
             return redirect('post/new')->withMessage('The are no posts currently in ' . Category::Find($id)->name . ' category! Help us and create new posts!');
         }
     }
-
     public function create() {
         return view('category_create');
     }

@@ -4,10 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Auth;
-use App\User;
 
-class AdminMiddleware
-{
+class AdminMiddleware {
     /**
      * Handle an incoming request.
      *
@@ -19,7 +17,7 @@ class AdminMiddleware
     {
         if (!(Auth::check() && Auth::user()->isAdmin()))
         {
-            return redirect('home')->withErrors('Need permission');
+            return redirect('/');
         }
         return $next($request);
     }

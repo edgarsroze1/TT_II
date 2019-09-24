@@ -4,7 +4,7 @@
     <div class="container">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb" style="background-color: #343A40">
-                <li class="breadcrumb-item"><a href="{{route('categories')}}" style="color: white">Categories</a></li>
+                <li class="breadcrumb-item"><a href="{{route('categories')}}" style="color: white">{{__('navbar.categories')}}</a></li>
                 <li class="breadcrumb-item active">Creating a new post!</li>
             </ol>
         </nav>
@@ -64,11 +64,12 @@
                                 @endif
                             </div>
                         </div>
-                        <div class="form-group row">
-                            {!! Form::label('image[]', 'Images', ['class' => 'col-md-4 control-label text-md-right']) !!}
-                            <div class="col-md-6">
-                                {!! Form::file('image[]', ['class' => 'form-control '.($errors->has('image') ? ' is-invalid' : '' ), 'multiple' => 'true']) !!}                            </div>
-                        </div>
+{{--                        <div class="form-group row">--}}
+{{--                            {!! Form::label('image[]', 'Images', ['class' => 'col-md-4 control-label text-md-right']) !!}--}}
+{{--                            <div class="col-md-6">--}}
+{{--                                {!! Form::file('image[]', ['class' => 'form-control '.($errors->has('image') ? ' is-invalid' : '' ), 'multiple' => 'true']) !!}--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
                         <div class="form-group row">
                             <div class="col-md-6 offset-md-4">
                                 {!! Form::submit('Add', ['class' => 'btn btn-primary']) !!}

@@ -18,7 +18,7 @@ class BannedMiddleware
     {
         if (!(Auth::check() && !Auth::user()->isBlocked()))
         {
-            return redirect('home')->withErrors('You are banned from that activity! Contact an administrator to do that! admin@marketplace.lv');
+            return redirect('home')->withErrors('You are banned from that activity! Contact an administrator to do that! admin@pd.lv');
         }
         return $next($request);
     }
